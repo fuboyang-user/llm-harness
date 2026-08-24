@@ -71,7 +71,7 @@ The landed contract:
 
 **Config-only opt-in attribution.** Rejected. A default-off setting is exactly how adapters keep drifting. The policy is mandatory default attribution with overrideable public values, not optional attribution.
 
-**SDK-named token (`deepseek-harness-sdk`).** Considered for the `User-Agent` token because the supported runtime client stack uses the SDK name. `deepseek-harness` won because it names the DeepSeek Harness product, matches the org/repo identity and package scope, and keeps wire attribution stable without calling the complete product an SDK.
+**SDK-named token (`deepseek-harness-sdk`).** Considered for the `User-Agent` token because the supported runtime client stack uses the SDK name. `deepseek-harness` won because it names the LLM Harness product, matches the org/repo identity and package scope, and keeps wire attribution stable without calling the complete product an SDK.
 
 ## Consequences
 

@@ -26,8 +26,8 @@ body {
      Firefox macOS equivalent; other engines ignore both lines. */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: var(--dsw-alias-label-primary, #0f1115);
-  background: var(--dsw-alias-bg-base, #fff);
+  color: var(--dsw-alias-label-primary, #f9fafb);
+  background: var(--dsw-alias-bg-base, #151517);
 }
 
 /* Form controls don't inherit the body font (UA sheets pin their families —

@@ -1,4 +1,4 @@
-# DeepSeek Harness Runtime Wheel
+# LLM Harness Runtime Wheel
 
 English | [中文](https://github.com/deepseek-ai/deepseek-harness/blob/master/python/sdk-runtime/README.zh.md)
 

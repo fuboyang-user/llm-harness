@@ -15,7 +15,7 @@ export const THEME_PREFERENCE_FIELD = 'preference'
 export type ThemePreference = typeof THEME_PREFERENCES[number]
 
 /** Default preference when the user-settings document has no override. */
-export const DEFAULT_PREFERENCE: ThemePreference = 'system'
+export const DEFAULT_PREFERENCE: ThemePreference = 'dark'
 
 /** Durable theme section shared by the Host schema and the browser scope. */
 export interface ThemeSettings {

@@ -284,6 +284,20 @@
     - id: compaction-basic
       name: '@deepseek-ai/dsh-compaction-basic'
 
+    # ── cognitive memory: persistent cross-session learning ──────────────
+
+    # File-based provider: JSON persistence + keyword retrieval.
+    # Claims `ctx.memory` via FileMemoryStore (extends abstract MemoryStore).
+    - id: memory-file
+      name: '@deepseek-ai/dsh-memory-file'
+      config:
+        path: !!js dshHomePath('memory')
+        maxMemories: 500
+
+    # Agent lifecycle integration: capture + inject + consolidate.
+    - id: memory-agent
+      name: '@deepseek-ai/dsh-memory-agent'
+
     # Human `/compact`: one useful reduction below the automatic threshold. Backend
     # independent, so it follows whichever compaction service this leaf mounts.
     - id: command-compact

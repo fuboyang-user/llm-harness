@@ -93,7 +93,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  height: 60px;
+  height: 68px;
   padding: 8px 0 8px 4px;
   margin-bottom: 8px;
   box-sizing: border-box;
@@ -129,8 +129,8 @@
 .brandIdentity {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 24px;
+  gap: 10px;
+  height: 32px;
   min-width: 0;
 }
 
@@ -146,10 +146,10 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  height: 24px;
-  font-size: 18px;
+  height: 32px;
+  font-size: 22px;
   font-weight: 600;
-  line-height: 24px;
+  line-height: 32px;
   letter-spacing: 0.04em;
 }
 

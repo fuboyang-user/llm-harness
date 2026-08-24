@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-e2b",
-  "description": "Shared E2B sandbox lifecycle for DeepSeek Harness provider adapters",
+  "description": "Shared E2B sandbox lifecycle for LLM Harness provider adapters",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"

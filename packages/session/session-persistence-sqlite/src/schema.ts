@@ -16,7 +16,7 @@ import { sql } from './sql.ts'
 
 /** Current physical-record schema with packed and compressed event rows. */
 export const SCHEMA_VERSION = 17
-/** Application id reserved for DeepSeek Harness SQLite session databases. */
+/** Application id reserved for LLM Harness SQLite session databases. */
 export const SESSION_PERSISTENCE_SQLITE_APPLICATION_ID = 0x44534850
 
 /** A materialized session's metadata and monotonic revision. */

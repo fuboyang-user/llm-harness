@@ -71,7 +71,7 @@ OpenRouter 应用归属刻意未实现。`HTTP-Referer`、`X-OpenRouter-Title`�
 
 **仅配置启用的归属。** 否决。默认关闭的设置正是适配器不断漂移的原因。策略是强制默认归属加可覆盖的公开值，而非可选归属。
 
-**以 SDK 命名的 token（`deepseek-harness-sdk`）。** 曾考虑用于 `User-Agent` token，因为受支持的运行时客户端栈使用 SDK 名称。`deepseek-harness` 胜出，因为它命名 DeepSeek Harness 产品、与组织／仓库身份和包 scope 一致，并且在不把完整产品称为 SDK 的前提下保持线路归属稳定。
+**以 SDK 命名的 token（`deepseek-harness-sdk`）。** 曾考虑用于 `User-Agent` token，因为受支持的运行时客户端栈使用 SDK 名称。`deepseek-harness` 胜出，因为它命名 LLM Harness 产品、与组织／仓库身份和包 scope 一致，并且在不把完整产品称为 SDK 的前提下保持线路归属稳定。
 
 ## 后果
 

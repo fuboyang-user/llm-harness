@@ -12,7 +12,7 @@ The root README is the repository's product entry point. Its product-first struc
 
 The root README preserves its existing structure, order, and wording wherever the underlying fact remains correct. A refresh changes only stale claims and adds material needed to represent shipped surfaces; it does not use repository growth as a reason to reframe the whole page.
 
-A note before installation thanks internal testers, states that features and experience remain unfinished, and asks for direct reports of failures, confusion, and friction through the WeCom group. The existing development-stage statement identifies DeepSeek Harness as being in internal testing.
+A note before installation thanks internal testers, states that features and experience remain unfinished, and asks for direct reports of failures, confusion, and friction through the WeCom group. The existing development-stage statement identifies LLM Harness as being in internal testing.
 
 The user-surface section adds the ACP automation server and Python/JSON-RPC SDK beside the existing Web, TUI, and headless entries. The installed TUI remains the single `dsh` command; the Web instructions build the active checkout before running `dsh web`, and custom or reused checkout paths stay explicit. These launch paths must remain executable through a real PTY and a production build/HTTP smoke, respectively. The capability paragraph keeps its compact inventory style while adding the shipped PTY, LSP, web, goal, planning, task, sandbox, approval, settings, credentials, session-query, and telemetry families and stating that compositions select subsets. One adjacent bullet records the authoritative-session-log rule because persistence, replay, queries, telemetry, and interfaces depend on it.
 

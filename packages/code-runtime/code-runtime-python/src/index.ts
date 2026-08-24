@@ -1,5 +1,5 @@
 /**
- * CPython subprocess code runtime for the DeepSeek Harness code-execution seam.
+ * CPython subprocess code runtime for the LLM Harness code-execution seam.
  *
  * The package owns the versionless fd-3 wire protocol between the Node host and
  * the CPython subprocess. The protocol's host-side codec and hostile-frame

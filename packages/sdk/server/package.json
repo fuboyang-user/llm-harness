@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-sdk-jsonrpc-server",
-  "description": "Stdio JSON-RPC server plugin for out-of-process DeepSeek Harness SDK clients",
+  "description": "Stdio JSON-RPC server plugin for out-of-process LLM Harness SDK clients",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"

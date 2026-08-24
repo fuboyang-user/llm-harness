@@ -1,4 +1,4 @@
-# DeepSeek Harness Architecture
+# LLM Harness Architecture
 
 English | [中文](architecture.zh.md)
 

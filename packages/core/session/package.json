@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-session",
-  "description": "Event-sourced session store for the DeepSeek Harness",
+  "description": "Event-sourced session store for the LLM Harness",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"

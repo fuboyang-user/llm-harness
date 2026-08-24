@@ -7,7 +7,7 @@ type OfficialBrandMarkProps = HeroBrandMarkOwnerProps & SidebarBrandMarkOwnerPro
 /**
  * Render the official mark with the presentation requested by its host surface.
  * @param props - Host-supplied mark presentation.
- * @returns the official whale mark.
+ * @returns the official harness mark.
  */
 export function OfficialBrandMark({ size, className }: OfficialBrandMarkProps) {
   return <FishLogo size={size} className={className} />

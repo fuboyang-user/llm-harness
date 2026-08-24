@@ -1,5 +1,5 @@
 /**
- * SessionTelemetryBackend Service Definition for the DeepSeek Harness.
+ * SessionTelemetryBackend Service Definition for the LLM Harness.
  *
  * This package owns the CAPTURE side of session-event reporting — which records
  * exist (the chunk projection), what they carry (the logical record), when

@@ -1,9 +1,9 @@
 ---
 name: dsh-doc-site-sync
-description: Use when publishing, updating, moving, or removing DeepSeek Harness documentation website pages; editing website/docs.ts mappings or navigation; diagnosing a page missing from the VitePress site; fixing projected documentation links; or running the docs:dev, docs:check, and doc-sync workflow after website-content changes.
+description: Use when publishing, updating, moving, or removing LLM Harness documentation website pages; editing website/docs.ts mappings or navigation; diagnosing a page missing from the VitePress site; fixing projected documentation links; or running the docs:dev, docs:check, and doc-sync workflow after website-content changes.
 ---
 
-# Synchronizing the DeepSeek Harness Documentation Site
+# Synchronizing the LLM Harness Documentation Site
 
 Keep repository Markdown as the only editable content source. Treat the website as a tested projection: [website/docs.ts](../../../website/docs.ts) selects public pages, [scripts/project-doc-site.ts](../../../scripts/project-doc-site.ts) rewrites them into the disposable `website/.generated/` tree, and VitePress builds that tree. The build additionally emits a raw-Markdown twin of every route (page URL minus any trailing slash, plus `.md`; index routes also get a parent-level alias) and a root `llms.txt` index; both derive from the same manifest and projector, so publishing, moving, or removing a page updates them automatically and `docs:build` fails when one is missing.
 
