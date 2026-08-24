@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <style>
+    @media (prefers-color-scheme: light) {
+      .mark { fill: #1a1a2e; }
+      .mark-line { stroke: #1a1a2e; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .mark { fill: #e0e0ec; }
+      .mark-line { stroke: #e0e0ec; }
+    }
+  </style>
+  <!-- Central node (brain/core) -->
+  <circle class="mark" cx="16" cy="16" r="4.5"/>
+  <!-- Orbital ring -->
+  <ellipse class="mark-line" cx="16" cy="16" rx="12" ry="5" stroke-width="1.8" fill="none" transform="rotate(-30 16 16)"/>
+  <!-- Satellite nodes -->
+  <circle class="mark" cx="5.5" cy="11" r="2"/>
+  <circle class="mark" cx="26.5" cy="21" r="2"/>
+  <circle class="mark" cx="22" cy="7.5" r="1.5"/>
+  <circle class="mark" cx="10" cy="24.5" r="1.5"/>
+</svg>

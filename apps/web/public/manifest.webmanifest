@@ -1,0 +1,16 @@
+{
+  "id": "/",
+  "name": "LLM Harness",
+  "short_name": "LLMH",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
