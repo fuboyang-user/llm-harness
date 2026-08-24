@@ -43,10 +43,11 @@ export const Config: z<Config> = z.object({
  * @param ctx - plugin context.
  * @param config - feature toggles.
  */
-export function apply(ctx: Context, config: Config): void {
-  if (config.capture !== false) registerObserver(ctx)
-  if (config.inject !== false) registerInjector(ctx)
-  if (config.consolidate !== false) registerConsolidation(ctx)
+export function apply(ctx: Context, config?: Config): void {
+  const resolved = config ?? {}
+  if (resolved.capture !== false) registerObserver(ctx)
+  if (resolved.inject !== false) registerInjector(ctx)
+  if (resolved.consolidate !== false) registerConsolidation(ctx)
 }
 
 export default apply

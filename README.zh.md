@@ -2,26 +2,106 @@
 
 [English](README.md) | 中文
 
-LLM Harness（`dsh`）是基于 [DeepSeek AI](https://deepseek.com) 开发的开源 agent harness（智能体框架）。它提供了一个可组合的、插件驱动的运行时，其中**每项能力均可替换**——从模型适配器、工具执行到会话持久化和 agent 生命周期管理。
+LLM Harness（`dsh`）是基于 [DeepSeek AI](https://deepseek.com) 以及 Deepseek Harness 开发的开源 agent harness（智能体框架）。它提供了一个可组合的、插件驱动的运行时，其中**每项能力均可替换**——从模型适配器、工具执行到会话持久化和 agent 生命周期管理。
 
 由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
 
-## 开发者预览
+## 工程创新点
 
-LLM Harness 目前处于 _开发者预览_ 阶段，正在快速迭代。**未来将出现破坏兼容性的变更。**
+### 1. 能力接缝：Definition / Provider / Consumer
 
-## 核心能力
+每个可替换的能力都遵循三角色结构——而非随意的插件钩子：
 
-| 能力 | 描述 | Seam |
+```
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│  Service Definition │     │  Service Provider   │     │     Consumer        │
+│  abstract class     │◄────│  implements         │────►│  integrates into    │
+│  claims ctx.<key>   │     │  concrete backend   │     │  agent loop / tools │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+```
+
+仅有一个角色的接缝是不完整的。一次提供方替换即可改变整个产品——将 `ctx.fs` 和 `ctx.shell` 指向远程沙箱，Bash、PTY、文件系统和 LSP 全部随之迁移，零分支化提供方。当前接缝：
+
+| Seam | Definition | Providers | 覆盖范围 |
+|---|---|---|---|
+| `ctx.llm` | LLM 适配器注册表 | DeepSeek, Pi AI, replay | 模型流式传输、凭据路由 |
+| `ctx.memory` | MemoryStore | file (JSON), agent lifecycle | 跨会话认知记忆 |
+| `ctx.fs` | 文件系统能力 | local, sandbox-mounted | 带策略的文件读/写/编辑 |
+| `ctx.shell` | Shell 执行 | local (bash/pwsh) | 通过 `ctx.subprocess` 的命令执行 |
+| `ctx.sandbox` | 进程限制 | bwrap, Landlock, Seatbelt | 跨平台沙箱 |
+| `ctx.compaction` | 上下文压缩 | basic (summarization) | 上下文窗口管理 |
+| `ctx.subagent` | 子 agent 委派 | in-process, workflow | Spawn/fork 子 agent |
+| `ctx.tools` | 工具注册表 | core + 30+ tool plugins | 所有面向模型的工具 |
+
+### 2. 模型可见 ⟺ 已记录：单一事实来源
+
+任何到达模型请求的内容都**必须**可从追加式会话日志中重建——由运行时不变式强制保证，而非约定。
+
+```
+session/event（追加式日志）
+  ├── deriveMessages()     ──► 模型上下文
+  ├── session-persistence  ──► 磁盘（JSONL / SQLite）
+  ├── compaction           ──► 摘要检查点
+  ├── session-projection   ──► UI 渲染
+  ├── fork / resume        ──► 派生会话
+  └── telemetry            ──► 可观测性
+```
+
+不存在旁路通道。新的模型可见输入需要新的 `SessionEventMap` 条目——不变式会断言这一点。这就是为什么会话标题、压缩、记忆召回和 UI 卡片都能从同一事件流中保真重放。
+
+### 3. 瀑布驱动的 agent 生命周期
+
+Agent 循环不是硬编码的——它是一个**类型化事件序列**。每个阶段都是一个瀑布，插件可拦截、重写或短路：
+
+```
+turn/start
+  └─► agent/pre-step（瀑布）      ← 记忆注入、压缩、钩子、上下文
+       └─► agent/request（瀑布）  ← 请求重写
+            └─► llm/stream（瀑布）   ← 重试、检查点、标题生成
+                 └─► assistant/message
+                      └─► tools/pre-execute（瀑布）  ← 钩子、权限、沙箱
+                           └─► 单调守卫              ← deny/abstain，身份受保护
+                                └─► tools/execute（瀑布） ← 超时、重试、指标
+                                     └─► tools/post-execute（瀑布） ← 接受、阻止、替换
+                                          └─► tools/result（通知） ← 冻结的权威结果
+  └─► agent/turn-stopping（串行） ← 钩子观察最终决策
+turn/end
+```
+
+新行为挂载到已记录的扩展点。修改循环本身则需更新架构图。
+
+### 4. Profile → Bundle → Patch：可组合的分发
+
+运行中的 `dsh` 是在启动时从有序层组合而成的插件树——没有特权核心：
+
+```
+Profile（web / headless / custom）
+  ├── Bundle: dsh-base        ── 模型、工具、持久化、沙箱、凭据
+  ├── Bundle: dsh-web-app     ── 浏览器应用
+  │                              （或 dsh-headless 用于一次性运行器）
+  ├── user cordis.patch.yml   ── 按 id 覆盖任何配置行
+  └── --patch overlay          ── CLI 级覆盖
+```
+
+`dsh --dump-config` 打印你的机器实际启动的完整树。任何一行都可被补丁替换。
+
+### 5. 可逆副作用系统
+
+每次注册都通过 `ctx.effect()` 或 `ctx.on()` 并带有处置器：
+
+- 提示词段落、工具 schema、适配器、事件监听器——全部是副作用
+- 插件卸载按**逆序**撤销注册
+- 热重载、沙箱拆卸和上下文作用域变得可组合，而非手工管理
+
+### 6. 通过扩展点集成的认知记忆
+
+跨会话持久化记忆，**无需修改 agent 循环**：
+
+| 阶段 | 扩展点 | 行为 |
 |---|---|---|
-| **认知记忆** | 跨会话持久化学习——agent 自动捕获经验、在每步之前召回相关知识，并随时间整合记忆 | `ctx.memory` |
-| **多模型提供商** | DeepSeek 和 Pi AI 适配器，支持热加载凭据解析和按请求路由 | `ctx.llm` |
-| **工具生态** | 文件系统、Bash、PowerShell、Web 搜索、LSP、技能、工作流、子 agent——全部位于可替换的提供方之后 | `ctx.tools` |
-| **会话压缩** | 自动上下文窗口管理，具备重放保真的摘要和检查点持久性 | `ctx.compaction` |
-| **沙箱与审批** | 进程限制（bwrap/Landlock/Seatbelt）、权限预设和人机协同审批 | `ctx.sandbox` |
-| **子 agent 委派** | Spawn、fork 和工作流子 agent，支持可延续的后台执行和一次性报告 | `ctx.subagent` |
-| **技能系统** | 可发现的、带徽章的 agent 技能，具备文件系统支持的目录和面向模型的加载器 | `ctx.skill` |
-| **Web GUI** | 全功能浏览器应用，支持实时对话、模型选择、工作区管理和插件清单 | `ctx.webServer` |
+| 捕获 | `agent/turn-stopping`（串行） | 观察者从已完成的轮次中提取决策、纠正和结果 |
+| 召回 | `agent/pre-step`（瀑布，prepend） | 关键词重叠 + 时间衰减 + 重要性评分；top-5 作为 `<memories>` 上下文注入 |
+| 整合 | `agent/status` 空闲转换 | 合并相关记忆，裁剪过时条目，在空闲期间运行 |
 
 ## 架构
 
@@ -48,23 +128,19 @@ LLM Harness 目前处于 _开发者预览_ 阶段，正在快速迭代。**未�
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-一切皆插件。没有特权核心——你只需将插件挂载到其他插件旁边即可扩展 dsh，注册是随插件卸载而撤销的副作用。**能力接缝**模式（Definition / Provider / Consumer）确保一次提供方替换即可改变整个产品。
-
 完整设计文档请参见 [Architecture](docs/architecture.zh.md)。
 
-## 运行
+## 快速开始
 
-### 通过 `npm` 运行
-
-安装 `Node.js`（22.19+），然后运行：
+### 通过 `npm`
 
 ```sh
 npx @deepseek-ai/dsh web
 ```
 
-该命令默认会在 `http://127.0.0.1:3080` 启动 Web UI 并在默认浏览器中打开。传入 `--no-open` 可仅运行服务器而不打开浏览器。详见 [Web UI 指南](docs/user/guide/index.zh.md)。
+在 `http://127.0.0.1:3080` 启动 Web UI。传入 `--no-open` 跳过浏览器。详见 [Web UI 指南](docs/user/guide/index.zh.md)。
 
-### 从源码运行
+### 从源码
 
 ```sh
 git clone https://github.com/fuboyang-user/llm-harness
@@ -74,11 +150,7 @@ pnpm run build
 pnpm dsh web
 ```
 
-`pnpm run build` 会准备仓库产物。`pnpm dsh web` 会直接使用这些已构建产物，不会重新构建。
-
 ### 无头模式
-
-无需服务器即可运行一次性会话：
 
 ```sh
 dsh --profile headless "your task here"
@@ -115,8 +187,6 @@ llm-harness/
 完整包索引：[packages/README.md](packages/README.md)。
 
 ## 扩展
-
-新行为挂载到已记录的扩展点：
 
 | 目标 | 机制 |
 |---|---|

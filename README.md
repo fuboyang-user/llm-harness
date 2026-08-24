@@ -6,22 +6,102 @@ LLM Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](h
 
 Powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
 
-## Developer preview
+## Engineering innovations
 
-LLM Harness is currently in _developer preview_ and is iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+### 1. Capability seam: Definition / Provider / Consumer
 
-## Key capabilities
+Every swappable capability follows a three-role structure — not ad-hoc plugin hooks:
 
-| Capability | Description | Seam |
+```
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│  Service Definition │     │  Service Provider   │     │     Consumer        │
+│  abstract class     │◄────│  implements         │────►│  integrates into    │
+│  claims ctx.<key>   │     │  concrete backend   │     │  agent loop / tools │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+```
+
+A seam with only one role is incomplete. One provider swap changes the whole product — point `ctx.fs` and `ctx.shell` at a remote sandbox and Bash, PTY, filesystem, and LSP all move together with zero provider forks. Current seams:
+
+| Seam | Definition | Providers | What it covers |
+|---|---|---|---|
+| `ctx.llm` | LLM adapter registry | DeepSeek, Pi AI, replay | Model streaming, credential routing |
+| `ctx.memory` | MemoryStore | file (JSON), agent lifecycle | Cross-session cognitive memory |
+| `ctx.fs` | Filesystem capability | local, sandbox-mounted | File read/write/edit with policy |
+| `ctx.shell` | Shell execution | local (bash/pwsh) | Command execution through `ctx.subprocess` |
+| `ctx.sandbox` | Process confinement | bwrap, Landlock, Seatbelt | Cross-platform sandboxing |
+| `ctx.compaction` | Context compaction | basic (summarization) | Context-window management |
+| `ctx.subagent` | Subagent delegation | in-process, workflow | Spawn/fork child agents |
+| `ctx.tools` | Tool registry | core + 30+ tool plugins | Every model-facing tool |
+
+### 2. Model-visible ⟺ logged: single source of truth
+
+Anything that reaches a model request **must** be reconstructable from the append-only session log — enforced by a runtime invariant, not convention.
+
+```
+session/event (append-only log)
+  ├── deriveMessages()     ──► model context
+  ├── session-persistence  ──► disk (JSONL / SQLite)
+  ├── compaction           ──► summarization checkpoints
+  ├── session-projection   ──► UI rendering
+  ├── fork / resume        ──► derived sessions
+  └── telemetry            ──► observability
+```
+
+There is no side channel. A new model-visible input requires a new `SessionEventMap` entry — the invariant asserts it. This is why session titles, compaction, memory recall, and UI cards all replay faithfully from the same event stream.
+
+### 3. Waterfall-driven agent lifecycle
+
+The agent loop is not hard-coded — it is a **typed event sequence**. Each phase is a waterfall that plugins intercept, rewrite, or short-circuit:
+
+```
+turn/start
+  └─► agent/pre-step (waterfall)     ← memory injection, compaction, hooks, context
+       └─► agent/request (waterfall) ← request rewriting
+            └─► llm/stream (waterfall)  ← retry, checkpoint, title generation
+                 └─► assistant/message
+                      └─► tools/pre-execute  (waterfall) ← hooks, permission, sandbox
+                           └─► monotonic guards           ← deny/abstain, identity protected
+                                └─► tools/execute (waterfall) ← timeout, retry, metrics
+                                     └─► tools/post-execute (waterfall) ← accept, block, replace
+                                          └─► tools/result (notification) ← frozen outcome
+  └─► agent/turn-stopping (serial)   ← hooks observe final decision
+turn/end
+```
+
+New behavior attaches to a documented extension point. Changing the loop itself updates the architecture map.
+
+### 4. Profile → Bundle → Patch: composable distribution
+
+A running `dsh` is a plugin tree composed at boot from ordered layers — no privileged core:
+
+```
+Profile (web / headless / custom)
+  ├── Bundle: dsh-base        ── model, tools, persistence, sandbox, credentials
+  ├── Bundle: dsh-web-app     ── browser application
+  │                              (or dsh-headless for one-shot runner)
+  ├── user cordis.patch.yml   ── override any row by id
+  └── --patch overlay          ── CLI-level override
+```
+
+`dsh --dump-config` prints the full tree your machine actually boots. Any row can be replaced by a patch.
+
+### 5. Reversible effect system
+
+Every registration goes through `ctx.effect()` or `ctx.on()` with a disposer:
+
+- Prompt sections, tool schemas, adapters, event listeners — all are effects
+- Plugin unload unwinds registrations in **reverse order**
+- Hot-reload, sandbox teardown, and context scoping become composable, not hand-managed
+
+### 6. Cognitive memory via extension points
+
+Cross-session persistent memory integrated **without modifying the agent loop**:
+
+| Phase | Extension point | What happens |
 |---|---|---|
-| **Cognitive Memory** | Persistent cross-session learning — the agent automatically captures experiences, recalls relevant knowledge before each step, and consolidates memories over time | `ctx.memory` |
-| **Multi-Provider LLM** | DeepSeek and Pi AI adapters with hot-reloadable credential resolution and per-request routing | `ctx.llm` |
-| **Tool Ecosystem** | Filesystem, Bash, PowerShell, web search, LSP, skills, workflow, subagents — all behind swappable providers | `ctx.tools` |
-| **Session Compaction** | Automatic context-window management with replay-faithful summarization and checkpoint durability | `ctx.compaction` |
-| **Sandbox & Approval** | Process confinement (bwrap/Landlock/Seatbelt), permission presets, and human-in-the-loop approval | `ctx.sandbox` |
-| **Subagent Delegation** | Spawn, fork, and workflow children with continuable background execution and one-shot reporting | `ctx.subagent` |
-| **Skill System** | Discoverable, badge-bearing agent skills with filesystem-backed catalog and model-facing loader | `ctx.skill` |
-| **Web GUI** | Full-featured browser application with real-time conversation, model selection, workspace management, and plugin inventory | `ctx.webServer` |
+| Capture | `agent/turn-stopping` (serial) | Observer extracts decisions, corrections, and outcomes from completed turns |
+| Recall | `agent/pre-step` (waterfall, prepend) | Keyword overlap + recency + importance scoring; top-5 injected as `<memories>` context |
+| Consolidate | `agent/status` idle transition | Merges related memories, prunes outdated entries, runs during idle |
 
 ## Architecture
 
@@ -48,23 +128,19 @@ LLM Harness is currently in _developer preview_ and is iterating rapidly. **THER
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-Everything is a plugin. There is no privileged core — you extend dsh by mounting a plugin beside the others, and registrations are effects that unwind when their plugin unloads. The **capability seam** pattern (Definition / Provider / Consumer) ensures one provider swap changes the whole product.
-
 See [Architecture](docs/architecture.md) for the full design document.
 
-## Run
+## Quick start
 
-### Run from `npm`
-
-Install `Node.js` (22.19+), then run:
+### From `npm`
 
 ```sh
 npx @deepseek-ai/dsh web
 ```
 
-The command starts the Web UI at `http://127.0.0.1:3080` by default and opens it in the default browser. Pass `--no-open` to run the server without opening a browser. See [Web UI guide](docs/user/guide/index.md).
+Starts the Web UI at `http://127.0.0.1:3080`. Pass `--no-open` to skip the browser. See [Web UI guide](docs/user/guide/index.md).
 
-### Run from source
+### From source
 
 ```sh
 git clone https://github.com/fuboyang-user/llm-harness
@@ -74,11 +150,7 @@ pnpm run build
 pnpm dsh web
 ```
 
-`pnpm run build` prepares the repository artifacts. `pnpm dsh web` uses those built artifacts without rebuilding.
-
 ### Headless mode
-
-Run one-shot sessions without a server:
 
 ```sh
 dsh --profile headless "your task here"
@@ -115,8 +187,6 @@ llm-harness/
 Full package index: [packages/README.md](packages/README.md).
 
 ## Extending
-
-New behavior attaches to a documented extension point:
 
 | Goal | Mechanism |
 |---|---|
