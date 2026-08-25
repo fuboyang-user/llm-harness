@@ -141,11 +141,11 @@ SRC 只解决 Host 源码进程的分发问题。Client 不会从运行中的 Ho
 Web 开发先使用 `pnpm run build` 准备当前 Host、Client 与 Web 产物，然后在两个终端中分别运行源码 Host 和 Client plugin watcher：
 
 ```sh
-pnpm dsh web
+pnpm llmh web
 pnpm run dev:web
 ```
 
-`dsh` 通过 tsx 启动 Host 源码，所以 Host 可以使用 SRC 回退；`dev:web` 只监听带 `dsh.client` 声明的 Client 插件并重写其 `lib/client.js`，它不会分析 Host decorator，也不会生成 Remote Client DTS。
+`llmh` 通过 tsx 启动 Host 源码，所以 Host 可以使用 SRC 回退；`dev:web` 只监听带 `dsh.client` 声明的 Client 插件并重写其 `lib/client.js`，它不会分析 Host decorator，也不会生成 Remote Client DTS。
 
 只修改 Remote 方法实现体而不改变约定时，无需重新生成 Typert 文件。新增或删除 decorator、修改导出名、namespace、参数、返回值、lookup、Context 或取消签名时，重新执行有序 lib 构建，让 Host 先生成严格约定，再让 Client 编译并打包新的贡献：
 

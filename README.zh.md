@@ -1,8 +1,7 @@
 # LLM Harness
-
 [English](README.md) | 中文
 
-LLM Harness（`dsh`）是基于 [DeepSeek AI](https://deepseek.com) 以及 Deepseek Harness 开发的开源 agent harness（智能体框架）。它提供了一个可组合的、插件驱动的运行时，其中**每项能力均可替换**——从模型适配器、工具执行到会话持久化和 agent 生命周期管理。
+LLM Harness（`llmh`）是基于 [DeepSeek AI](https://deepseek.com) 以及 DeepSeek Harness 开发的开源 agent harness（智能体框架）。它提供了一个可组合的、插件驱动的运行时，其中**每项能力均可替换**——从模型适配器、工具执行到会话持久化和 agent 生命周期管理。
 
 由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
 
@@ -72,7 +71,7 @@ turn/end
 
 ### 4. Profile → Bundle → Patch：可组合的分发
 
-运行中的 `dsh` 是在启动时从有序层组合而成的插件树——没有特权核心：
+运行中的 `llmh` 是在启动时从有序层组合而成的插件树——没有特权核心：
 
 ```
 Profile（web / headless / custom）
@@ -83,7 +82,7 @@ Profile（web / headless / custom）
   └── --patch overlay          ── CLI 级覆盖
 ```
 
-`dsh --dump-config` 打印你的机器实际启动的完整树。任何一行都可被补丁替换。
+`llmh --dump-config` 打印你的机器实际启动的完整树。任何一行都可被补丁替换。
 
 ### 5. 可逆副作用系统
 
@@ -147,13 +146,13 @@ git clone https://github.com/fuboyang-user/llm-harness
 cd llm-harness
 pnpm install
 pnpm run build
-pnpm dsh web
+pnpm llmh web
 ```
 
 ### 无头模式
 
 ```sh
-dsh --profile headless "your task here"
+llmh --profile headless "your task here"
 ```
 
 ## 仓库结构
@@ -161,7 +160,7 @@ dsh --profile headless "your task here"
 ```
 llm-harness/
 ├── apps/
-│   ├── cli/              # `dsh` 产品启动器
+│   ├── cli/              # `llmh` 产品启动器
 │   └── web/              # Web 前端应用
 ├── packages/
 │   ├── core/             # 产品 API 主干（session、agent、tools、prompts）

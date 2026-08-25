@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-LLM Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com). It provides a composable, plugin-driven runtime where **every capability is replaceable** — from model adapters and tool execution to session persistence and agent lifecycle management.
+LLM Harness (`llmh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com) and DeepSeek Harness. It provides a composable, plugin-driven runtime where **every capability is replaceable** — from model adapters and tool execution to session persistence and agent lifecycle management.
 
 Powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
 
@@ -72,7 +72,7 @@ New behavior attaches to a documented extension point. Changing the loop itself 
 
 ### 4. Profile → Bundle → Patch: composable distribution
 
-A running `dsh` is a plugin tree composed at boot from ordered layers — no privileged core:
+A running `llmh` is a plugin tree composed at boot from ordered layers — no privileged core:
 
 ```
 Profile (web / headless / custom)
@@ -83,7 +83,7 @@ Profile (web / headless / custom)
   └── --patch overlay          ── CLI-level override
 ```
 
-`dsh --dump-config` prints the full tree your machine actually boots. Any row can be replaced by a patch.
+`llmh --dump-config` prints the full tree your machine actually boots. Any row can be replaced by a patch.
 
 ### 5. Reversible effect system
 
@@ -147,13 +147,13 @@ git clone https://github.com/fuboyang-user/llm-harness
 cd llm-harness
 pnpm install
 pnpm run build
-pnpm dsh web
+pnpm llmh web
 ```
 
 ### Headless mode
 
 ```sh
-dsh --profile headless "your task here"
+llmh --profile headless "your task here"
 ```
 
 ## Repository structure
@@ -161,7 +161,7 @@ dsh --profile headless "your task here"
 ```
 llm-harness/
 ├── apps/
-│   ├── cli/              # The `dsh` product launcher
+│   ├── cli/              # The `llmh` product launcher
 │   └── web/              # Web frontend application
 ├── packages/
 │   ├── core/             # Product API spine (session, agent, tools, prompts)

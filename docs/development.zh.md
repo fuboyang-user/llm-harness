@@ -141,7 +141,7 @@ pnpm run build
 单次运行的 Headless coding agent 需要环境变量或仓库根目录 `.env` 中的 `DEEPSEEK_API_KEY`：
 
 ```sh
-pnpm dsh --profile headless "summarize this workspace"
+pnpm llmh --profile headless "summarize this workspace"
 ```
 
 自指的 cordis 演示可以检查并修改其实时插件运行时，并需要相同的凭证（默认 `web`，也可用 `acp`）：

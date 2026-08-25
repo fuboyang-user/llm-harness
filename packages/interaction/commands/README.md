@@ -16,7 +16,7 @@ Handlers return `success` or `error` plus optional UI text. A successful handler
 
 ## Composition
 
-The shipped `dsh` base mounts this service and the Web client dispatches through it. UI-less demo spines and ACP automation do not provide a command adapter. Custom interactive compositions and command producers mount `@deepseek-ai/dsh-commands` explicitly.
+The shipped `llmh` base mounts this service and the Web client dispatches through it. UI-less demo spines and ACP automation do not provide a command adapter. Custom interactive compositions and command producers mount `@deepseek-ai/dsh-commands` explicitly.
 
 ## Model Experience
 
